@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN"      
+ "http://ibatis.apache.org/dtd/ibatis-3-mapper.dtd">
+ <!-- namespace 命名空间，现阶段可以写可以不写 -->
+<mapper namespace="org.ks.dao.DeptDao">
+	<!-- 一对多，嵌套查询：查询部门时，自动查询出该部门下所有员工 -->
+	<select id="findById" parameterType="int" resultMap="deptMap">
+		select * from dept where deptno=#{id}
+	</select>
+	<select id="findEmps" parameterType="int" 
+							resultType="org.ks.entity.Emp">
+		select * from emp where deptno=#{deptno}
+	</select>
+	
+	<resultMap type="org.ks.entity.Dept" id="deptMap">
+		<id property="deptno" column="deptno"/>
+		<result property="dname" column="dname"/>
+		<result property="loc" column="loc"/>
+		<!-- 如果子对象是集合，需要使用collention标签来完成映射
+			property:子对象的属性名称
+			javaType:集合对应的java类型
+			ofType:集合中元素的java类型
+			collection:标签里可以书写的内容参考resultMap -->
+		<collection property="emps" column="deptno"
+						javaType="java.util.ArrayList"
+						ofType="org.ks.entity.Emp"
+						select="findEmps">
+		</collection>
+	</resultMap>
+	
+	<!-- 一对多，嵌套结果 -->
+	<select id="findById2" parameterType="int" resultMap="deptMap2">
+		select d.*,e.* from dept d
+		inner join emp e on d.deptno=e.deptno
+		where d.deptno=#{id}
+	</select>
+	<resultMap type="org.ks.entity.Dept" id="deptMap2">
+		<id property="deptno" column="deptno"/>
+		<result property="dname" column="dname"/>
+		<result property="loc" column="loc"/>
+		<collection property="emps" ofType="org.ks.entity.Emp"
+				javaType="java.util.ArrayList"
+				column="deptno">
+			<id property="empno" column="empno"/>	
+			<result property="ename" column="ename"/>	
+			<result property="job" column="job"/>	
+			<result property="mgr" column="mgr"/>	
+			<result property="hiredate" column="hiredate"/>	
+			<result property="sal" column="sal"/>	
+			<result property="comm" column="comm"/>	
+			<result property="deptno" column="deptno"/>	
+		</collection>
+	</resultMap>
+</mapper>
